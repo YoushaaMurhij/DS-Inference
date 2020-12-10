@@ -64,7 +64,6 @@ def PolarOffsetMain(args, cfg):
     log_file = os.path.join(output_dir, ('log_train_%s.txt' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S')))
     logger = common_utils.create_logger(log_file, rank=cfg.LOCAL_RANK)
 
-    logger.info('**********************Start logging**********************')
     gpu_list = os.environ['CUDA_VISIBLE_DEVICES'] if 'CUDA_VISIBLE_DEVICES' in os.environ.keys() else 'ALL'
     logger.info('CUDA_VISIBLE_DEVICES=%s' % gpu_list)
 
@@ -126,20 +125,11 @@ def PolarOffsetMain(args, cfg):
     if lr_scheduler == None:
         logger.info('Not using lr scheduler')
 
-    logger.info(model)  # print model Arc
+    #logger.info(model)  # print model Arc
 
     if cfg.LOCAL_RANK==0:
         writer = SummaryWriter(log_dir=summary_dir)
 
-    logger.info('**********************Start Training**********************')
-    rank = cfg.LOCAL_RANK
-    best_before_iou = -1 if 'best_before_iou' not in other_state else other_state['best_before_iou']
-    best_pq = -1 if 'best_pq' not in other_state else other_state['best_pq']
-    best_after_iou = -1 if 'best_after_iou' not in other_state else other_state['best_after_iou']
-    global_iter = 0 if 'global_iter' not in other_state else other_state['global_iter']
-    val_global_iter = 0 if 'val_global_iter' not in other_state else other_state ['val_global_iter']
-
-     
     ### evaluate
     if args.onlyval:
         logger.info('----EPOCH {} Evaluating----'.format(epoch))
