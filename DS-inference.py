@@ -68,9 +68,6 @@ def PolarOffsetMain(args, cfg):
     gpu_list = os.environ['CUDA_VISIBLE_DEVICES'] if 'CUDA_VISIBLE_DEVICES' in os.environ.keys() else 'ALL'
     logger.info('CUDA_VISIBLE_DEVICES=%s' % gpu_list)
 
-    if dist_train:
-        total_gpus = dist.get_world_size()
-        logger.info('total_batch_size: %d' % (total_gpus * args.batch_size))
     for key, val in vars(args).items():
         logger.info('{:16} {}'.format(key, val))
     log_config_to_file(cfg, logger=logger)
@@ -78,10 +75,7 @@ def PolarOffsetMain(args, cfg):
         os.system('cp %s %s' % (args.config, output_dir))
 
     ### create dataloader
-    if (not args.onlytest) and (not args.onlyval):
-        train_dataset_loader = build_dataloader(args, cfg, split='train', logger=logger)
-        val_dataset_loader = build_dataloader(args, cfg, split='val', logger=logger, no_shuffle=True, no_aug=True)
-    elif args.onlyval:
+    if args.onlyval:
         val_dataset_loader = build_dataloader(args, cfg, split='val', logger=logger, no_shuffle=True, no_aug=True)
     else:
         test_dataset_loader = build_dataloader(args, cfg, split='test', logger=logger, no_shuffle=True, no_aug=True)
@@ -109,7 +103,6 @@ def PolarOffsetMain(args, cfg):
                 model.fix_semantic_parameters()
         optimizer = train_utils.build_optimizer(model, cfg)
         epoch, other_state = train_utils.load_params_with_optimizer_otherstate(model, ckpt_fname, to_cpu=dist_train, optimizer=optimizer, logger=logger) # new feature
-        logger.info("Loaded Epoch: {}".format(epoch))
     elif args.pretrained_ckpt is not None:
         train_utils.load_pretrained_model(model, args.pretrained_ckpt, to_cpu=dist_train, logger=logger)
         if not args.nofix:
@@ -133,10 +126,7 @@ def PolarOffsetMain(args, cfg):
     if lr_scheduler == None:
         logger.info('Not using lr scheduler')
 
-    model.train()  # before wrap to DistributedDataParallel to support fixed some parameters
-    if dist_train:
-        model = nn.parallel.DistributedDataParallel(model, device_ids=[cfg.LOCAL_RANK % torch.cuda.device_count()], find_unused_parameters=True)
-    logger.info(model)
+    logger.info(model)  # print model Arc
 
     if cfg.LOCAL_RANK==0:
         writer = SummaryWriter(log_dir=summary_dir)
