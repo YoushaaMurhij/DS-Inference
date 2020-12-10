@@ -11,7 +11,6 @@ import torch.distributed as dist
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from utils import train_utils
 from utils import common_utils
 from utils.config import cfg_from_yaml_file, log_config_to_file, global_args, global_cfg
 from utils.evaluate_panoptic import init_eval, printResults
@@ -83,12 +82,8 @@ def PolarOffsetMain(args, cfg):
     model = build_network(cfg)
     model.cuda()
 
-    ### create optimizer
-    optimizer = train_utils.build_optimizer(model, cfg)
-
     ### load ckpt
     ckpt_fname = os.path.join(ckpt_dir, args.ckpt_name)
-    epoch = -1
 
     other_state = {}
     if args.pretrained_ckpt is not None and os.path.exists(ckpt_fname):
@@ -100,8 +95,6 @@ def PolarOffsetMain(args, cfg):
             else:
                 logger.info("Freezing semantic and backbone part of the model.")
                 model.fix_semantic_parameters()
-        optimizer = train_utils.build_optimizer(model, cfg)
-        epoch, other_state = train_utils.load_params_with_optimizer_otherstate(model, ckpt_fname, to_cpu=dist_train, optimizer=optimizer, logger=logger) # new feature
     elif args.pretrained_ckpt is not None:
         train_utils.load_pretrained_model(model, args.pretrained_ckpt, to_cpu=dist_train, logger=logger)
         if not args.nofix:
@@ -113,17 +106,9 @@ def PolarOffsetMain(args, cfg):
                 model.fix_semantic_parameters()
         else:
             logger.info("No Freeze.")
-        optimizer = train_utils.build_optimizer(model, cfg)
-    elif os.path.exists(ckpt_fname):
-        epoch, other_state = train_utils.load_params_with_optimizer_otherstate(model, ckpt_fname, to_cpu=dist_train, optimizer=optimizer, logger=logger) # new feature
-        logger.info("Loaded Epoch: {}".format(epoch))
     if other_state is None:
         other_state = {}
 
-    ### create optimizer and scheduler
-    lr_scheduler = None
-    if lr_scheduler == None:
-        logger.info('Not using lr scheduler')
 
     #logger.info(model)  # print model Arc
 
@@ -132,7 +117,6 @@ def PolarOffsetMain(args, cfg):
 
     ### evaluate
     if args.onlyval:
-        logger.info('----EPOCH {} Evaluating----'.format(epoch))
         model.eval()
         min_points = 50 # according to SemanticKITTI official rule
         before_merge_evaluator = init_eval(min_points=min_points)
