@@ -6,10 +6,8 @@ import sys
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.distributed as dist
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
 
 from utils import common_utils
 from utils.config import cfg_from_yaml_file, log_config_to_file, global_args, global_cfg
