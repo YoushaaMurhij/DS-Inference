@@ -13,15 +13,15 @@ RUN pip3 install torch-cluster -f https://pytorch-geometric.com/whl/torch-1.7.0+
 RUN pip3 install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.7.0+cu101.html
 
 
-# # ARG USER=docker_centerpoint
-# # ARG UID=1000
-# # ARG GID=1000
-# # # default password
-# # ARG PW=user 
+ARG USER=docker_centerpoint
+ARG UID=1000
+ARG GID=1000
+# default password
+ARG PW=user 
 
-# # RUN useradd -m ${USER} --uid=${UID} && echo "${USER}:${PW}" | chpasswd && adduser ${USER} sudo
+RUN useradd -m ${USER} --uid=${UID} && echo "${USER}:${PW}" | chpasswd && adduser ${USER} sudo
 
-# # WORKDIR /home/${USER}
-# # RUN cd /home/${USER} && mkdir -p catkin_ws/src && chown -R ${UID}:${GID} ./
+WORKDIR /home/${USER}
+RUN cd /home/${USER} && mkdir -p catkin_ws/src && chown -R ${UID}:${GID} ./
 
-# # USER ${UID}:${GID}
+USER ${UID}:${GID}

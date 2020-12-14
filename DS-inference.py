@@ -141,7 +141,6 @@ def PolarOffsetMain(args, cfg):
             logger.info("After Merge Panoptic Scores")
             after_merge_results = printResults(after_merge_evaluator, logger=logger)
 
-        logger.info("----Evaluating Finished----")
         return
     
 
