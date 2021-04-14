@@ -9,7 +9,6 @@ if [ "$(docker ps -aq -f status=exited -f name=centerpoint)" ]; then
 fi
 
 docker run -it -d --rm \
-    --gpus all \
     -e "NVIDIA_DRIVER_CAPABILITIES=all" \
     --env="DISPLAY" \
     --env="QT_X11_NO_MITSHM=1" \
