@@ -1,0 +1,10 @@
+
+language: python
+
+services:
+  - docker
+
+before_install:
+  - docker build . -f docker/Dockerfile -t x64/ds_net:latest
+script:
+  - ./docker/start.sh
